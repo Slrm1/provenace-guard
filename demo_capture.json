@@ -1,0 +1,200 @@
+{
+  "base_url": "http://127.0.0.1:<ephemeral-port>",
+  "health": {
+    "http_status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  "submissions": [
+    {
+      "http_status": 201,
+      "body": {
+        "ai_likeness_score": 0.8875,
+        "attribution": "likely_ai",
+        "confidence": 0.8875,
+        "content_id": "7ff5dd3f-0d16-4a30-ad1c-0749edb60cc4",
+        "creator_id": "demo-writer",
+        "label": "This writing shows strong indicators of AI generation. This assessment is not proof of authorship. The creator can appeal.",
+        "semantic_signal_status": "not_configured",
+        "signals": {
+          "formulaic": 1.0,
+          "structural": 0.7955
+        },
+        "status": "classified",
+        "timestamp": "2026-10-06T02:56:29.743832+00:00",
+        "uncertainty_reasons": [],
+        "weights": {
+          "formulaic": 0.45,
+          "structural": 0.55
+        },
+        "word_count": 128
+      }
+    },
+    {
+      "http_status": 201,
+      "body": {
+        "ai_likeness_score": 0.2531,
+        "attribution": "likely_human",
+        "confidence": 0.7469,
+        "content_id": "d87e31dc-474f-4abf-b83b-6a7d0bd2b895",
+        "creator_id": "demo-writer",
+        "label": "This writing shows strong indicators of human authorship. This assessment is not proof of authorship.",
+        "semantic_signal_status": "not_configured",
+        "signals": {
+          "formulaic": 0.0,
+          "structural": 0.4601
+        },
+        "status": "classified",
+        "timestamp": "2026-10-06T02:56:29.761326+00:00",
+        "uncertainty_reasons": [],
+        "weights": {
+          "formulaic": 0.45,
+          "structural": 0.55
+        },
+        "word_count": 117
+      }
+    },
+    {
+      "http_status": 201,
+      "body": {
+        "ai_likeness_score": 0.275,
+        "attribution": "uncertain",
+        "confidence": 0.55,
+        "content_id": "2af0220b-fdc1-4967-9b31-724d8240b821",
+        "creator_id": "demo-writer",
+        "label": "We cannot reliably determine how this writing was created. No authorship claim is made.",
+        "semantic_signal_status": "not_configured",
+        "signals": {
+          "formulaic": 0.0,
+          "structural": 0.5
+        },
+        "status": "classified",
+        "timestamp": "2026-10-06T02:56:29.778114+00:00",
+        "uncertainty_reasons": [
+          "short_text"
+        ],
+        "weights": {
+          "formulaic": 0.45,
+          "structural": 0.55
+        },
+        "word_count": 5
+      }
+    }
+  ],
+  "appeal": {
+    "http_status": 201,
+    "body": {
+      "appeal_id": "acf83bf0-2963-4e36-9949-e5631bcf929e",
+      "content_id": "7ff5dd3f-0d16-4a30-ad1c-0749edb60cc4",
+      "status": "under_review",
+      "timestamp": "2026-10-06T02:56:29.798664+00:00"
+    }
+  },
+  "content_after_appeal": {
+    "http_status": 200,
+    "body": {
+      "ai_likeness_score": 0.8875,
+      "attribution": "likely_ai",
+      "confidence": 0.8875,
+      "content_id": "7ff5dd3f-0d16-4a30-ad1c-0749edb60cc4",
+      "created_at": "2026-10-06T02:56:29.743832+00:00",
+      "creator_id": "demo-writer",
+      "label": "This writing shows strong indicators of AI generation. This assessment is not proof of authorship. The creator can appeal.",
+      "semantic_signal_status": "not_configured",
+      "signals": {
+        "formulaic": 1.0,
+        "structural": 0.7955
+      },
+      "status": "under_review",
+      "text_sha256": "264f2dffbc6ce55578b912991fc1eb7f52729d461139b59e737bf5707c726103",
+      "uncertainty_reasons": [],
+      "weights": {
+        "formulaic": 0.45,
+        "structural": 0.55
+      },
+      "word_count": 128
+    }
+  },
+  "audit_log": {
+    "http_status": 200,
+    "body": {
+      "entries": [
+        {
+          "content_id": "7ff5dd3f-0d16-4a30-ad1c-0749edb60cc4",
+          "details": {
+            "appeal_id": "acf83bf0-2963-4e36-9949-e5631bcf929e",
+            "appeal_reasoning": "I drafted and revised this myself; please review the attribution.",
+            "creator_id": "demo-writer",
+            "status": "under_review"
+          },
+          "event_id": "00206261-710f-4e2b-b978-0c60bc6b783a",
+          "event_type": "appeal",
+          "timestamp": "2026-10-06T02:56:29.798664+00:00"
+        },
+        {
+          "content_id": "2af0220b-fdc1-4967-9b31-724d8240b821",
+          "details": {
+            "ai_likeness_score": 0.275,
+            "attribution": "uncertain",
+            "confidence": 0.55,
+            "creator_id": "demo-writer",
+            "signals": {
+              "formulaic": 0.0,
+              "structural": 0.5
+            },
+            "status": "classified"
+          },
+          "event_id": "9baa205a-ce04-492b-ba46-35570a08d83f",
+          "event_type": "decision",
+          "timestamp": "2026-10-06T02:56:29.778114+00:00"
+        },
+        {
+          "content_id": "d87e31dc-474f-4abf-b83b-6a7d0bd2b895",
+          "details": {
+            "ai_likeness_score": 0.2531,
+            "attribution": "likely_human",
+            "confidence": 0.7469,
+            "creator_id": "demo-writer",
+            "signals": {
+              "formulaic": 0.0,
+              "structural": 0.4601
+            },
+            "status": "classified"
+          },
+          "event_id": "6e448161-4279-4e5c-bb63-a7dca0d06b12",
+          "event_type": "decision",
+          "timestamp": "2026-10-06T02:56:29.761326+00:00"
+        },
+        {
+          "content_id": "7ff5dd3f-0d16-4a30-ad1c-0749edb60cc4",
+          "details": {
+            "ai_likeness_score": 0.8875,
+            "attribution": "likely_ai",
+            "confidence": 0.8875,
+            "creator_id": "demo-writer",
+            "signals": {
+              "formulaic": 1.0,
+              "structural": 0.7955
+            },
+            "status": "classified"
+          },
+          "event_id": "af772c26-8db1-4fca-8273-6023586edb85",
+          "event_type": "decision",
+          "timestamp": "2026-10-06T02:56:29.743832+00:00"
+        }
+      ]
+    }
+  },
+  "rate_limit_statuses_after_first_three": [
+    201,
+    201,
+    201,
+    201,
+    201,
+    201,
+    201,
+    429,
+    429
+  ]
+}

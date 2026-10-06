@@ -1,20 +1,25 @@
 Add-Type -AssemblyName System.Drawing
 $frameDir = Join-Path $PSScriptRoot 'video_frames'
 New-Item -ItemType Directory -Path $frameDir -Force | Out-Null
+$capturePath = Join-Path $PSScriptRoot 'demo_capture.json'
+if (-not (Test-Path $capturePath)) { throw 'Run python record_demo.py first to capture live HTTP responses.' }
+$capture = Get-Content $capturePath -Raw | ConvertFrom-Json
+$firstId = $capture.submissions[0].body.content_id
+$rateCodes = $capture.rate_limit_statuses_after_first_three -join '  '
 
 $slides = @(
-    @{Title='PROVENANCE GUARD'; Body=@('A cautious writing-attribution API', 'Project 4 portfolio walkthrough', 'Signals  >  score  >  label  >  appeal')},
-    @{Title='THE PROBLEM'; Body=@('A detector cannot prove who wrote a passage.', 'Readers need context without false certainty.', 'Creators need a clear path to contest a result.')},
-    @{Title='SUBMISSION FLOW'; Body=@('POST /submit with text and creator_id', 'Validate  >  score distinct signals', 'Choose a careful label  >  save audit event', 'Return content_id, confidence, and label')},
-    @{Title='TWO LOCAL SIGNALS'; Body=@('Structure: sentence rhythm and punctuation', 'Formulaic language: stock phrases per word', 'Optional Groq: semantic style assessment', 'Each signal can be wrong on its own.')},
-    @{Title='UNCERTAINTY RULES'; Body=@('AI-like score >= 0.85: likely AI', 'Score <= 0.30: likely human', 'Middle, short, or conflicting: uncertain', 'Scores are indicators, not proof.')},
-    @{Title='ACTUAL DEMO SCORES'; Body=@('AI-style text: 0.8875  >  likely AI', 'Casual review: 0.2531  >  likely human', 'Tiny poem: 0.2750  >  uncertain', 'The short-text guard overrides its score.')},
-    @{Title='READER LABELS'; Body=@('Likely AI: strong indicators, appeal offered', 'Likely human: strong human indicators', 'Uncertain: no authorship claim is made', 'Exact label text is in README.md.')},
-    @{Title='APPEAL FLOW'; Body=@('POST /appeal with content_id, creator_id,', 'and the creator reasoning', 'Matching creator  >  under_review', 'A second linked audit event is written.')},
-    @{Title='AUDIT AND SAFETY'; Body=@('Three real decisions plus a linked appeal.', 'Raw text is not saved; its SHA-256 hash is.', '10 submissions per minute; 100 per day per IP.', 'The demo reaches HTTP 429 twice.')},
-    @{Title='TRY THE LIVE DEMO'; Body=@('pip install -r requirements.txt', 'python -m unittest discover -s tests -v', 'python demo.py', 'The demo prints three submissions and an appeal.')},
-    @{Title='DESIGN LIMITS'; Body=@('Short poems can look too repetitive.', 'Formal human writing can look formulaic.', 'Edited AI text may evade these indicators.', 'Identity and audit access need production controls.')},
-    @{Title='THANK YOU'; Body=@('Source: app.py and planning.md', 'Evidence: tests/test_app.py and demo.py', 'See README.md for the exact labels and API.')}
+    @{Title='PROVENANCE GUARD'; Body=@('Live local HTTP demonstration', 'Real responses from the Flask API', 'Captured by python record_demo.py')},
+    @{Title='START THE API'; Body=@('> python record_demo.py', 'Flask serves on 127.0.0.1', "GET /health  ->  HTTP $($capture.health.http_status)", "Response: $($capture.health.body.status)")},
+    @{Title='SUBMIT WRITING'; Body=@('POST /submit  {text, creator_id}', "HTTP $($capture.submissions[0].http_status)  ->  $($capture.submissions[0].body.attribution)", "AI-likeness: $($capture.submissions[0].body.ai_likeness_score)", "Confidence: $($capture.submissions[0].body.confidence)")},
+    @{Title='SIGNALS IN THE RESPONSE'; Body=@("Structural: $($capture.submissions[0].body.signals.structural)", "Formulaic: $($capture.submissions[0].body.signals.formulaic)", 'Weighted score: 0.55 x structure + 0.45 x phrases', 'Scores are indicators, not proof of authorship.')},
+    @{Title='THREE ACTUAL RESULTS'; Body=@("AI-style text: $($capture.submissions[0].body.attribution) / $($capture.submissions[0].body.confidence)", "Casual review: $($capture.submissions[1].body.attribution) / $($capture.submissions[1].body.confidence)", "Tiny poem: $($capture.submissions[2].body.attribution) / $($capture.submissions[2].body.confidence)", 'Short writing receives an uncertain label.')},
+    @{Title='THE READER LABEL'; Body=@('Likely AI response says:', 'Strong indicators of AI generation.', 'This assessment is not proof of authorship.', 'The creator can appeal.')},
+    @{Title='APPEAL THE RESULT'; Body=@('POST /appeal  {content_id, creator_id,', 'creator_reasoning}', "HTTP $($capture.appeal.http_status)  ->  $($capture.appeal.body.status)", "Content ID: $($firstId.Substring(0, 18))...")},
+    @{Title='CHECK STORED STATUS'; Body=@('GET /content/<content_id>', "HTTP $($capture.content_after_appeal.http_status)", "Current status: $($capture.content_after_appeal.body.status)", 'The original decision remains in the audit trail.')},
+    @{Title='INSPECT AUDIT EVENTS'; Body=@('GET /log', "HTTP $($capture.audit_log.http_status)  ->  $($capture.audit_log.body.entries.Count) events", 'Three decisions and one linked appeal', 'Each decision includes time, signals and score.')},
+    @{Title='TEST THE RATE LIMIT'; Body=@('POST /submit repeatedly from one IP', $rateCodes, 'The final two requests return HTTP 429.', 'Limit: 10 per minute and 100 per day.')},
+    @{Title='DESIGN DECISIONS'; Body=@('Likely AI requires a score of at least 0.85.', 'Short or conflicting evidence stays uncertain.', 'Creators can appeal a decision.', 'This avoids an automatic accusation on weak evidence.')},
+    @{Title='RUN IT YOURSELF'; Body=@('python -m unittest discover -s tests -v', 'python record_demo.py', 'See demo_capture.json for full HTTP responses.', 'See planning.md and README.md for the design.')}
 )
 
 $width = 960
@@ -44,7 +49,7 @@ for ($i = 0; $i -lt $slides.Count; $i++) {
     for ($j = 0; $j -lt $slides[$i].Body.Count; $j++) {
         $graphics.DrawString($slides[$i].Body[$j], $bodyFont, $whiteBrush, 60, (200 + 61 * $j))
     }
-    $graphics.DrawString('Provenance Guard  |  captioned project tour', $smallFont, $mutedBrush, 60, 492)
+    $graphics.DrawString('Provenance Guard  |  captured live HTTP responses', $smallFont, $mutedBrush, 60, 492)
     $graphics.DrawString("$($i+1) / $($slides.Count)", $smallFont, $accentBrush, 851, 492)
     $path = Join-Path $frameDir ('{0:D2}.jpg' -f $i)
     $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Jpeg)
