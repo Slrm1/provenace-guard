@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -242,6 +242,10 @@ def create_app(config=None):
     @app.get("/health")
     def health():
         return jsonify(status="ok")
+
+    @app.get("/demo")
+    def demo_page():
+        return send_file(Path(__file__).with_name("demo_ui.html"))
 
     return app
 

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Provenance Guard · Live Demo</title>
+  <style>
+    :root { color-scheme: dark; font: 16px/1.45 Segoe UI, Arial, sans-serif; background:#0b1425; color:#e9f2f8; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:28px; }
+    h1 { font-size:32px; margin:0 0 5px; }
+    h2 { font-size:18px; margin:0 0 15px; }
+    p { color:#a9bfd0; margin:0; }
+    header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; border-bottom:2px solid #4fe1c1; padding-bottom:18px; }
+    .eyebrow { color:#4fe1c1; font-size:13px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    .badge { border:1px solid #4fe1c1; border-radius:20px; color:#4fe1c1; padding:8px 14px; font-weight:700; }
+    .grid { display:grid; grid-template-columns: 420px minmax(0,1fr); gap:20px; }
+    .card { background:#132238; border:1px solid #28415a; border-radius:15px; padding:22px; }
+    label { display:block; color:#aac4d6; margin:13px 0 5px; font-size:13px; font-weight:700; text-transform:uppercase; }
+    textarea, input { width:100%; background:#091627; border:1px solid #3d5b72; color:#f2f7fb; border-radius:8px; padding:10px 12px; font:14px/1.4 Consolas, monospace; }
+    textarea { min-height:155px; resize:vertical; }
+    button { background:#4fe1c1; border:0; border-radius:8px; color:#092331; font-weight:700; padding:11px 14px; cursor:pointer; margin:5px 5px 5px 0; }
+    button.secondary { background:#29445b; color:#e9f2f8; }
+    button:hover { filter:brightness(1.12); }
+    .buttons { margin-top:13px; }
+    .hint { margin-top:14px; color:#aac4d6; font-size:13px; }
+    pre { background:#071320; border:1px solid #2a4a60; border-radius:10px; margin:0; padding:16px; font:14px/1.44 Consolas, monospace; white-space:pre-wrap; overflow-wrap:anywhere; max-height:500px; overflow:auto; color:#d9f6e8; }
+    .result-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
+    .status { color:#4fe1c1; font:700 16px Consolas, monospace; }
+    .footer { margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .footer pre { min-height:120px; max-height:190px; }
+    code { color:#4fe1c1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><div class="eyebrow">Running from app.py · localhost</div><h1>Provenance Guard</h1><p>Live API walkthrough: submit, appeal, inspect the audit trail, test limits.</p></div>
+    <span id="health" class="badge">Checking /health…</span>
+  </header>
+  <main class="grid">
+    <section class="card">
+      <h2>Send a real request</h2>
+      <div class="buttons">
+        <button class="secondary" onclick="preset('ai')">AI-style sample</button>
+        <button class="secondary" onclick="preset('human')">Casual sample</button>
+        <button class="secondary" onclick="preset('short')">Short poem</button>
+      </div>
+      <label for="creator">Creator ID</label><input id="creator" value="demo-writer">
+      <label for="text">Writing to analyze</label><textarea id="text"></textarea>
+      <div class="buttons"><button id="submit" onclick="submitText()">POST /submit</button><button id="appeal" class="secondary" onclick="appeal()">POST /appeal</button></div>
+      <p class="hint">The response below comes from the running Flask API and SQLite database.</p>
+    </section>
+    <section class="card">
+      <div class="result-head"><h2>HTTP response</h2><span id="http-status" class="status">READY</span></div>
+      <pre id="response">Choose a sample and submit it.</pre>
+    </section>
+  </main>
+  <div class="footer">
+    <section class="card"><div class="result-head"><h2>Audit trail</h2><button id="log" class="secondary" onclick="loadLog()">GET /log</button></div><pre id="audit">Run a submission, then inspect the log.</pre></section>
+    <section class="card"><div class="result-head"><h2>Rate limiting</h2><button id="rate" class="secondary" onclick="testRate()">Test 10/min limit</button></div><pre id="rate-result">Repeated submissions show HTTP 429 at the limit.</pre></section>
+  </div>
+  <script>
+    const ai = 'It is important to note that artificial intelligence represents a transformative paradigm shift. Furthermore, stakeholders must consider a comprehensive approach to responsible deployment. Moreover, this multifaceted challenge is crucial for every organization. '.repeat(4);
+    const human = 'ok so i tried the ramen place downtown and honestly? underwhelming. the broth was fine, but way too salty! i was thirsty all afternoon. my friend got the spicy version; she liked it. maybe i\'ll try that next time. '.repeat(3);
+    const samples = {ai, human, short:'A tiny poem about rain.'};
+    let lastId = null;
+    function preset(name) { document.getElementById('text').value = samples[name]; }
+    async function api(path, body) {
+      const response = await fetch(path, {method:body?'POST':'GET', headers:body?{'Content-Type':'application/json'}:{}, body:body?JSON.stringify(body):undefined});
+      let data; try { data=await response.json(); } catch { data={error:'Non-JSON response'}; }
+      return {status:response.status,data};
+    }
+    function show(result) { document.getElementById('http-status').textContent='HTTP '+result.status; document.getElementById('response').textContent=JSON.stringify(result.data,null,2); }
+    async function submitText() {
+      const result=await api('/submit',{text:document.getElementById('text').value,creator_id:document.getElementById('creator').value});
+      if(result.data.content_id) lastId=result.data.content_id;
+      show(result);
+    }
+    async function appeal() {
+      if(!lastId) { document.getElementById('response').textContent='Submit writing first.'; return; }
+      show(await api('/appeal',{content_id:lastId,creator_id:document.getElementById('creator').value,creator_reasoning:'I drafted and revised this writing myself. Please review the attribution.'}));
+    }
+    async function loadLog() {
+      const result=await api('/log');
+      document.getElementById('audit').textContent=JSON.stringify(result.data.entries.slice(0,4),null,2);
+    }
+    async function testRate() {
+      const statuses=[];
+      for(let i=0;i<12;i++) {
+        const result=await api('/submit',{text:samples.human,creator_id:'rate-test'});
+        statuses.push(result.status);
+        document.getElementById('rate-result').textContent='POST /submit × '+(i+1)+'\n'+statuses.join('  ');
+      }
+    }
+    preset('ai');
+    api('/health').then(result => document.getElementById('health').textContent='/health · HTTP '+result.status);
+  </script>
+</body>
+</html>

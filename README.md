@@ -15,6 +15,8 @@ python app.py
 
 Set `GROQ_API_KEY` in an untracked `.env` to enable the optional semantic signal. The two local signals work without a key. `DATABASE_PATH` can override the default `provenance.db`. Run `python -m unittest discover -s tests -v` for tests and `python demo.py` for a reproducible API walkthrough and audit output.
 
+With the server running, open [the local demo page](http://localhost:5000/demo) to submit sample writing, appeal a result, inspect the audit log, and trigger the rate limit through the browser.
+
 ```powershell
 Invoke-RestMethod http://localhost:5000/submit -Method Post -ContentType 'application/json' -Body '{"creator_id":"writer-1","text":"Paste a passage of at least 80 words for stronger evidence..."}'
 Invoke-RestMethod http://localhost:5000/log
@@ -65,4 +67,4 @@ The specification fixed the cautious AI threshold, labels, and appeal status bef
 
 ## Walkthrough video
 
-[Download the demo video (MP4)](https://github.com/Slrm1/provenace-guard/raw/refs/heads/main/demo_walkthrough.mp4). It is a captioned video showing the results of a real Flask server running on loopback HTTP: submissions, their signal scores and labels, an appeal, the audit log, and HTTP 429 rate limiting. The exact HTTP responses are saved in [demo_capture.json](demo_capture.json). The video has no spoken audio. To reproduce it on Windows, run `python record_demo.py`, `node make_video.js`, `pip install -r video-requirements.txt`, then `python convert_video.py`; `python demo.py` is a shorter test-client walkthrough.
+[Download the live demo video (MP4)](https://github.com/Slrm1/provenace-guard/raw/refs/heads/main/demo_walkthrough.mp4). This is a screen recording of a browser interacting with the running Flask app: text submissions, their scores and labels, an appeal, the audit log, and HTTP 429 rate limiting. The [live demo page](demo_ui.html) and [recording script](record_live_demo.py) are in the repo. The recorder also runs the test suite before opening the browser. The video has no spoken audio. To reproduce it, install `requirements.txt` and `video-requirements.txt`, run `python -m playwright install chromium` (or set `PLAYWRIGHT_CHROMIUM` to a Chrome executable), then run `python record_live_demo.py`.
