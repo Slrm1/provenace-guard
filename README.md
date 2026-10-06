@@ -65,4 +65,4 @@ The specification fixed the cautious AI threshold, labels, and appeal status bef
 
 ## Walkthrough video
 
-`demo_walkthrough.avi` is a captioned video showing the results of a real Flask server running on loopback HTTP: submissions, their signal scores and labels, an appeal, the audit log, and HTTP 429 rate limiting. The exact HTTP responses are saved in [demo_capture.json](demo_capture.json). The video has no spoken audio. To reproduce it on Windows, run `python record_demo.py` followed by `node make_video.js`; `python demo.py` is a shorter test-client walkthrough.
+[Watch or download the demo video](demo_walkthrough.avi). It is a captioned video showing the results of a real Flask server running on loopback HTTP: submissions, their signal scores and labels, an appeal, the audit log, and HTTP 429 rate limiting. The exact HTTP responses are saved in [demo_capture.json](demo_capture.json). The video has no spoken audio. To reproduce it on Windows, run `python record_demo.py` followed by `node make_video.js`; `python demo.py` is a shorter test-client walkthrough.
